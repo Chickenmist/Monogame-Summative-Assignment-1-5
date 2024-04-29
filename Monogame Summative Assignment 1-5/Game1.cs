@@ -9,6 +9,14 @@ namespace Monogame_Summative_Assignment_1_5
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
+        enum Screen
+        {
+            Intro
+
+        }
+
+        Screen screen;
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
