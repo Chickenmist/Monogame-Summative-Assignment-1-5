@@ -25,6 +25,25 @@
 /processorParam:TextureFormat=Color
 /build:eggmanSprite.png
 
+#begin greenHillZoneBackground.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:greenHillZoneBackground.png
+
+#begin instructionText.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:instructionText.spritefont
+
 #begin knucklesSprite.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -73,6 +92,42 @@
 /processorParam:TextureFormat=Color
 /build:sonicDamagedSprite.png
 
+#begin sonicFootTapOne.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:sonicFootTapOne.png
+
+#begin sonicFootTapTwo.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:sonicFootTapTwo.png
+
+#begin sonicRunningSprite.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:sonicRunningSprite.png
+
 #begin sonicSprite.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -85,6 +140,18 @@
 /processorParam:TextureFormat=Color
 /build:sonicSprite.png
 
+#begin tailsFlyingSprite.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:tailsFlyingSprite.png
+
 #begin tailsSprite.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -96,4 +163,11 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:tailsSprite.png
+
+#begin titleText.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:titleText.spritefont
 
