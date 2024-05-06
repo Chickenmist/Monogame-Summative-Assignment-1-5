@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Monogame_Summative_Assignment_1_5
 { 
@@ -22,6 +23,11 @@ namespace Monogame_Summative_Assignment_1_5
 
         float seconds;
 
+        bool sonicRunning;
+        int timesSonicsCrossed; //Keeps track of how many times sonic has crossed the screen during the running animation
+
+        bool sonicStopped;
+
         MouseState mouseState;
         KeyboardState keyboardState;
 
@@ -31,7 +37,9 @@ namespace Monogame_Summative_Assignment_1_5
 
         Rectangle backgroundRect;
 
-        Texture2D tailsFlyingTexture; //Iamge size is 80x76
+        Texture2D tailsFlyingTexture; //Image size is 80x76
+        Rectangle tailsFlyingRect;
+        Vector2 tailsFlyingSpeed;
 
         Rectangle tailsRect;
         Texture2D tailsTexture; //Image size is 80x80 pixels
@@ -46,12 +54,6 @@ namespace Monogame_Summative_Assignment_1_5
         int tappingFrame;
 
         Texture2D eggmanTexture; //Image size is 100x141 pixels
-
-        Texture2D ringTexture; //Image size is 20x20 pixels
-        Rectangle ringRect;
-
-        Texture2D sonicDamagedTexture; //Image size is 80x56
-        Rectangle sonicDamagedRect;
 
         SpriteFont instructions;
         SpriteFont title;
@@ -71,8 +73,6 @@ namespace Monogame_Summative_Assignment_1_5
             _graphics.PreferredBackBufferHeight = 600;
             _graphics.ApplyChanges();
 
-            sonicDamagedRect = new Rectangle(40, 40, 150, 70);
-
             backgroundRect = new Rectangle(0, 0, 1000, 600);
 
             seconds = 0;
@@ -81,14 +81,22 @@ namespace Monogame_Summative_Assignment_1_5
 
             sonicRunningSpeed = new Vector2(7,0);
 
+            sonicRunning = false;
+
+            sonicStopped = false;
+
+            timesSonicsCrossed = 0;
+
             screen = Screen.Title;
 
             base.Initialize();
 
             sonicRect = new Rectangle(185, 100, sonicTexture.Width, sonicTexture.Height);
+            sonicRunningRect = new Rectangle(0, 445 - sonicRunningTexture.Height, sonicRunningTexture.Width, sonicRunningTexture.Height);
+            
             tailsRect = new Rectangle(100, 132, tailsTexture.Width, tailsTexture.Height);
-            ringRect = new Rectangle(205, 120, ringTexture.Width, ringTexture.Height);
-            sonicRunningRect = new Rectangle(-1000, 100, sonicRunningTexture.Width, sonicRunningTexture.Height);
+            tailsFlyingRect = new Rectangle(0,0, tailsFlyingTexture.Width, tailsFlyingTexture.Height);
+            
         }
 
         protected override void LoadContent()
@@ -99,19 +107,17 @@ namespace Monogame_Summative_Assignment_1_5
             
             sonicTexture = Content.Load<Texture2D>("sonicSprite");
             tailsTexture = Content.Load<Texture2D>("tailsSprite");
-            
-            ringTexture = Content.Load<Texture2D>("ringSprite");
-            sonicDamagedTexture = Content.Load<Texture2D>("sonicDamagedSprite");
+
             sonicRunningTexture = Content.Load<Texture2D>("sonicRunningSprite");
             tailsFlyingTexture = Content.Load<Texture2D>("tailsFlyingSprite");
             titleScreenBackground = Content.Load<Texture2D>("sonicAnimationTitle");
+            mainBackground = Content.Load<Texture2D>("greenHillZoneBackground");
 
             instructions = Content.Load<SpriteFont>("instructionText");
             title = Content.Load<SpriteFont>("titleText");
 
             sonicFootTaps.Add(Content.Load<Texture2D>("sonicFootTapOne"));
             sonicFootTaps.Add(Content.Load<Texture2D>("sonicFootTapTwo"));
-
         }
 
         protected override void Update(GameTime gameTime)
@@ -136,20 +142,51 @@ namespace Monogame_Summative_Assignment_1_5
 
             if (screen == Screen.RunningScreen)
             {
-                sonicRunningRect.Offset(sonicRunningSpeed);
-                
-                if (sonicRunningRect.Right < 2000)
+                seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (seconds >= 0.5)
                 {
-                    screen = Screen.MainAnimation;
+                    tappingFrame = (tappingFrame + 1) % sonicFootTaps.Count;
+                    seconds = 0;
+                }
+                
+                if (keyboardState.IsKeyDown(Keys.Right) && sonicRunning == false)
+                {
+                    sonicRunning = true;
+                }
+
+                if (sonicRunning == true)
+                {
+                    sonicRunningRect.Offset(sonicRunningSpeed);
+
+                    if (sonicRunningRect.Left > 1000  && timesSonicsCrossed < 3)
+                    {
+                        sonicRunningRect.X = 0 - sonicRunningRect.Width;
+
+                        timesSonicsCrossed++;
+                    }
+                    else if (sonicRunningRect.Left > 1000 && timesSonicsCrossed == 3)
+                    {
+                        sonicRunningRect.X = 0 - sonicRunningRect.Width;
+                        screen = Screen.MainAnimation;
+                    }
                 }
             }
 
-            seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            if (seconds >= 0.5)
+            if (screen == Screen.MainAnimation)
             {
-                tappingFrame = (tappingFrame + 1) % sonicFootTaps.Count;
-                seconds = 0;
+                if (sonicStopped == false)
+                {
+                    sonicRunningRect.X += (int)sonicRunningSpeed.X;
+
+                    if (sonicRunningRect.X >= 230)
+                    {
+                        sonicStopped = true;
+                    }
+                }
+                else if (sonicStopped ==  true)
+                {
+                    
+                }
             }
 
 
@@ -166,19 +203,47 @@ namespace Monogame_Summative_Assignment_1_5
 
             if (screen == Screen.Title)
             {
-                _spriteBatch.Draw(titleScreenBackground, backgroundRect, Color.White);
+                _spriteBatch.Draw(titleScreenBackground, backgroundRect, null, Color.White);
+                _spriteBatch.DrawString(title, "A REALLY BAD SONIC ANIMATION", new Vector2(240, 359), Color.Black);
+                _spriteBatch.DrawString(instructions, "Press enter to proceed or wait for music to end", new Vector2(5, 560), Color.Yellow);
+
             }
             else if (screen == Screen.RunningScreen)
             {
-                _spriteBatch.Draw(sonicRunningTexture, sonicRunningRect, Color.White);
+                if (timesSonicsCrossed % 2 == 0)
+                {
+                    _spriteBatch.Draw(mainBackground, backgroundRect, null, Color.White, 0f, new Vector2(0, 0), SpriteEffects.FlipHorizontally, 0f);
+                }
+                else
+                {
+                    _spriteBatch.Draw(mainBackground, backgroundRect, Color.White);
+                }
+
+                if (sonicRunning == false)
+                {
+                    _spriteBatch.Draw(sonicFootTaps[tappingFrame], new Vector2(0, 445 - sonicRunningTexture.Height), Color.White);
+
+                    _spriteBatch.DrawString(instructions, "Press -> to make Sonic run", new Vector2(5, 560), Color.White);
+                }
+                else
+                {
+                    _spriteBatch.Draw(sonicRunningTexture, sonicRunningRect, Color.White);
+                }
             }
+            else if (screen == Screen.MainAnimation)
+            {
+                _spriteBatch.Draw(mainBackground, backgroundRect, Color.White);
 
-            _spriteBatch.Draw(sonicFootTaps[tappingFrame], new Vector2(250, 100), Color.White);
+                if (sonicStopped == false)
+                {
+                    _spriteBatch.Draw(sonicRunningTexture, sonicRunningRect, Color.White);
+                }
+                else if (sonicStopped == true)
+                {
+                    _spriteBatch.Draw(sonicTexture, sonicRect, Color.White);
 
-            _spriteBatch.Draw(tailsTexture, tailsRect, Color.White);
-            _spriteBatch.Draw(sonicTexture, sonicRect, Color.White);
-            _spriteBatch.Draw(ringTexture, ringRect, Color.White);
-            _spriteBatch.Draw(sonicDamagedTexture, sonicDamagedRect, Color.White);
+                }
+            }
 
             _spriteBatch.End();
             base.Draw(gameTime);
