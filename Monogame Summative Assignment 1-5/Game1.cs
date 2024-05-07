@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.Collections.Generic;
@@ -26,7 +27,11 @@ namespace Monogame_Summative_Assignment_1_5
         bool sonicRunning;
         int timesSonicsCrossed; //Keeps track of how many times sonic has crossed the screen during the running animation
 
-        bool sonicStopped;
+        bool sonicStopped; //indicates if Sonic has stopped running
+
+        bool eggmanTurned; //indicates if Eggman has turned around
+
+        bool tailsIsFlying; //indicates if Tails is flying
 
         MouseState mouseState;
         KeyboardState keyboardState;
@@ -43,7 +48,7 @@ namespace Monogame_Summative_Assignment_1_5
 
         Rectangle tailsRect;
         Texture2D tailsTexture; //Image size is 80x80 pixels
-        //Tails and Sonic textures have a height difference of 32 pixels. This is important for keeping them on level ground
+        //Tails and Sonic textures have a height difference of 32 pixels
         Texture2D sonicTexture; //Image size is 80x112 pixels
         Rectangle sonicRect;
         Texture2D sonicRunningTexture; //Image size is 140x112
@@ -57,6 +62,9 @@ namespace Monogame_Summative_Assignment_1_5
 
         SpriteFont instructions;
         SpriteFont title;
+
+        SoundEffect bigTime;
+        SoundEffectInstance bigTimeInstance; //Sonic says the big time line
 
         public Game1()
         {
@@ -79,11 +87,17 @@ namespace Monogame_Summative_Assignment_1_5
 
             tappingFrame = 0;
 
-            sonicRunningSpeed = new Vector2(7,0);
+            sonicRunningSpeed = new Vector2(10,0);
+
+            tailsFlyingSpeed = new Vector2(0, 3);
 
             sonicRunning = false;
 
             sonicStopped = false;
+
+            tailsIsFlying = true;
+
+            eggmanTurned = false;
 
             timesSonicsCrossed = 0;
 
@@ -91,11 +105,11 @@ namespace Monogame_Summative_Assignment_1_5
 
             base.Initialize();
 
-            sonicRect = new Rectangle(185, 100, sonicTexture.Width, sonicTexture.Height);
+            sonicRect = new Rectangle(320, 445 - sonicTexture.Height, sonicTexture.Width, sonicTexture.Height);
             sonicRunningRect = new Rectangle(0, 445 - sonicRunningTexture.Height, sonicRunningTexture.Width, sonicRunningTexture.Height);
             
-            tailsRect = new Rectangle(100, 132, tailsTexture.Width, tailsTexture.Height);
-            tailsFlyingRect = new Rectangle(0,0, tailsFlyingTexture.Width, tailsFlyingTexture.Height);
+            tailsRect = new Rectangle(320 - tailsTexture.Width, 445 - tailsTexture.Height, tailsTexture.Width, tailsTexture.Height);
+            tailsFlyingRect = new Rectangle(320 - tailsFlyingTexture.Width, 0 - (tailsFlyingTexture.Height * 2), tailsFlyingTexture.Width, tailsFlyingTexture.Height);
             
         }
 
@@ -107,11 +121,14 @@ namespace Monogame_Summative_Assignment_1_5
             
             sonicTexture = Content.Load<Texture2D>("sonicSprite");
             tailsTexture = Content.Load<Texture2D>("tailsSprite");
-
             sonicRunningTexture = Content.Load<Texture2D>("sonicRunningSprite");
             tailsFlyingTexture = Content.Load<Texture2D>("tailsFlyingSprite");
             titleScreenBackground = Content.Load<Texture2D>("sonicAnimationTitle");
             mainBackground = Content.Load<Texture2D>("greenHillZoneBackground");
+            eggmanTexture = Content.Load<Texture2D>("eggmanSprite");
+
+            bigTime = Content.Load<SoundEffect>("BigTimeSonic");
+            bigTimeInstance = bigTime.CreateInstance();
 
             instructions = Content.Load<SpriteFont>("instructionText");
             title = Content.Load<SpriteFont>("titleText");
@@ -143,7 +160,7 @@ namespace Monogame_Summative_Assignment_1_5
             if (screen == Screen.RunningScreen)
             {
                 seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                if (seconds >= 0.5)
+                if (seconds >= 0.4)
                 {
                     tappingFrame = (tappingFrame + 1) % sonicFootTaps.Count;
                     seconds = 0;
@@ -152,19 +169,20 @@ namespace Monogame_Summative_Assignment_1_5
                 if (keyboardState.IsKeyDown(Keys.Right) && sonicRunning == false)
                 {
                     sonicRunning = true;
+                    seconds = 0;
                 }
 
                 if (sonicRunning == true)
                 {
-                    sonicRunningRect.Offset(sonicRunningSpeed);
+                    sonicRunningRect.X += (int)sonicRunningSpeed.X;
 
-                    if (sonicRunningRect.Left > 1000  && timesSonicsCrossed < 3)
+                    if (sonicRunningRect.Left > 1000  && timesSonicsCrossed < 2)
                     {
                         sonicRunningRect.X = 0 - sonicRunningRect.Width;
 
                         timesSonicsCrossed++;
                     }
-                    else if (sonicRunningRect.Left > 1000 && timesSonicsCrossed == 3)
+                    else if (sonicRunningRect.Left > 1000 && timesSonicsCrossed == 2)
                     {
                         sonicRunningRect.X = 0 - sonicRunningRect.Width;
                         screen = Screen.MainAnimation;
@@ -185,7 +203,31 @@ namespace Monogame_Summative_Assignment_1_5
                 }
                 else if (sonicStopped ==  true)
                 {
-                    
+                    if (tailsIsFlying == true)
+                    {
+                        tailsFlyingRect.Y += (int)tailsFlyingSpeed.Y;
+                        
+                        if (tailsFlyingRect.Bottom >= 445)
+                        {
+                            tailsIsFlying = false;
+                        }
+                    }
+
+                    if (eggmanTurned == false)
+                    {
+                        seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                        if (seconds == 1)
+                        {
+                            bigTimeInstance.Play();
+                            eggmanTurned = true;
+                        }
+                    }
+                    else if (eggmanTurned == true && bigTimeInstance.State == SoundState.Stopped)
+                    {
+
+                    }
+
                 }
             }
 
@@ -242,6 +284,19 @@ namespace Monogame_Summative_Assignment_1_5
                 {
                     _spriteBatch.Draw(sonicTexture, sonicRect, Color.White);
 
+                    if (tailsIsFlying == true)
+                    {
+                        _spriteBatch.Draw(tailsFlyingTexture, tailsFlyingRect, Color.White);
+                    }
+                    else
+                    {
+                        _spriteBatch.Draw(tailsTexture, tailsRect, Color.White);
+                    }
+
+                    if (eggmanTurned == false)
+                    {
+                        
+                    }
                 }
             }
 
