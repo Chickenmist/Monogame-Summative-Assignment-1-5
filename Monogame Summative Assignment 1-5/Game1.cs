@@ -22,20 +22,35 @@ namespace Monogame_Summative_Assignment_1_5
 
         Screen screen;
 
+        //Floats, ints, and bools
         float seconds;
 
         bool sonicRunning;
         int timesSonicsCrossed; //Keeps track of how many times sonic has crossed the screen during the running animation
 
-        bool sonicStopped; //indicates if Sonic has stopped running
+        bool sonicStopped; //Indicates if Sonic has stopped running
 
-        bool eggmanTurned; //indicates if Eggman has turned around
+        bool eggmanTurned; //Indicates if Eggman has turned around
 
-        bool tailsIsFlying; //indicates if Tails is flying
+        bool tailsIsFlying; //Indicates if Tails is flying
+
+        bool eggmanInMobile; //Indicates if Eggman is in the Eggmobile
+
+        bool eggmanFlyingAway; //Indicates if Eggman is running away
+
+        bool bigTimeDone; //Indicates if the big time voice line has been played
+
+        bool sonicIsThatYouDone; //Indicates if the Sonic is that you voice line has been played
+
+        bool thisIsItEggmanDone; //Indicates if the this is it Eggman voice line has been played
+
+        bool noRetreatDone; //Indicates if the no retreat line has been played
+        //
 
         MouseState mouseState;
         KeyboardState keyboardState;
 
+        //Textures, Rectangles and Vectors
         Texture2D titleScreenBackground;
 
         Texture2D mainBackground;
@@ -59,12 +74,30 @@ namespace Monogame_Summative_Assignment_1_5
         int tappingFrame;
 
         Texture2D eggmanTexture; //Image size is 100x141 pixels
+        Rectangle eggmanRect;
 
+        Texture2D eggmobileTexture; //Image size is 80x81
+        Rectangle eggmobileRect;
+        //
+
+        //Fonts
         SpriteFont instructions;
         SpriteFont title;
-
+        //
+        
+        //Sound Effects
         SoundEffect bigTime;
         SoundEffectInstance bigTimeInstance; //Sonic says the big time line
+
+        SoundEffect sonicIsThatYou;
+        SoundEffectInstance sonicIsThatYouInstance; //Eggman says the sonic is that you line
+
+        SoundEffect thisIsItEggman;
+        SoundEffectInstance thisIsItEggmanInstance; //Sonic says the this is it Eggman line
+
+        SoundEffect noRetreat;
+        SoundEffectInstance noRetreatInstance; //Eggman says no retreat line
+        //
 
         public Game1()
         {
@@ -99,6 +132,18 @@ namespace Monogame_Summative_Assignment_1_5
 
             eggmanTurned = false;
 
+            eggmanInMobile = false;
+
+            eggmanFlyingAway = false;
+
+            bigTimeDone = false;
+
+            sonicIsThatYouDone = false;
+
+            thisIsItEggmanDone = false;
+
+            noRetreatDone = false;
+
             timesSonicsCrossed = 0;
 
             screen = Screen.Title;
@@ -111,6 +156,8 @@ namespace Monogame_Summative_Assignment_1_5
             tailsRect = new Rectangle(320 - tailsTexture.Width, 445 - tailsTexture.Height, tailsTexture.Width, tailsTexture.Height);
             tailsFlyingRect = new Rectangle(320 - tailsFlyingTexture.Width, 0 - (tailsFlyingTexture.Height * 2), tailsFlyingTexture.Width, tailsFlyingTexture.Height);
             
+            eggmanRect = new Rectangle(720, 455 - eggmanTexture.Height, eggmanTexture.Width, eggmanTexture.Height);
+            eggmobileRect = new Rectangle(720, 455 - eggmobileTexture.Height, eggmobileTexture.Width, eggmobileTexture.Height);
         }
 
         protected override void LoadContent()
@@ -119,6 +166,7 @@ namespace Monogame_Summative_Assignment_1_5
 
             // TODO: use this.Content to load your game content here
             
+            //Textures
             sonicTexture = Content.Load<Texture2D>("sonicSprite");
             tailsTexture = Content.Load<Texture2D>("tailsSprite");
             sonicRunningTexture = Content.Load<Texture2D>("sonicRunningSprite");
@@ -126,15 +174,32 @@ namespace Monogame_Summative_Assignment_1_5
             titleScreenBackground = Content.Load<Texture2D>("sonicAnimationTitle");
             mainBackground = Content.Load<Texture2D>("greenHillZoneBackground");
             eggmanTexture = Content.Load<Texture2D>("eggmanSprite");
+            eggmobileTexture = Content.Load<Texture2D>("eggMobileTexture");
+            //
 
+            //Sound Effects
             bigTime = Content.Load<SoundEffect>("BigTimeSonic");
             bigTimeInstance = bigTime.CreateInstance();
 
+            sonicIsThatYou = Content.Load<SoundEffect>("sonicIsThatYou");
+            sonicIsThatYouInstance = sonicIsThatYou.CreateInstance();
+
+            thisIsItEggman = Content.Load<SoundEffect>("thisIsItEggman");
+            thisIsItEggmanInstance = thisIsItEggman.CreateInstance();
+
+            noRetreat = Content.Load<SoundEffect>("NoRetreatEggman");
+            noRetreatInstance = noRetreat.CreateInstance();
+            //
+
+            //Fonts
             instructions = Content.Load<SpriteFont>("instructionText");
             title = Content.Load<SpriteFont>("titleText");
+            //
 
+            //Foot taps
             sonicFootTaps.Add(Content.Load<Texture2D>("sonicFootTapOne"));
             sonicFootTaps.Add(Content.Load<Texture2D>("sonicFootTapTwo"));
+            //
         }
 
         protected override void Update(GameTime gameTime)
@@ -217,15 +282,47 @@ namespace Monogame_Summative_Assignment_1_5
                     {
                         seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-                        if (seconds == 1)
+                        if (seconds >= 1 && bigTimeDone == false)
                         {
                             bigTimeInstance.Play();
+                            bigTimeDone = true;
+                        }
+
+                        if (bigTimeInstance.State == SoundState.Stopped && bigTimeDone)
+                        {
                             eggmanTurned = true;
                         }
                     }
-                    else if (eggmanTurned == true && bigTimeInstance.State == SoundState.Stopped)
+                    else if (eggmanTurned == true)
                     {
+                        if (sonicIsThatYouDone == false)
+                        {
+                            sonicIsThatYouInstance.Play();
+                            sonicIsThatYouDone = true;
+                        }
+                        else if (sonicIsThatYouDone && sonicIsThatYouInstance.State == SoundState.Stopped)
+                        {
+                            if (thisIsItEggmanDone == false)
+                            {
+                                thisIsItEggmanInstance.Play();
+                                thisIsItEggmanDone = true;
+                            }
+                            else if (thisIsItEggmanDone && thisIsItEggmanInstance.State == SoundState.Stopped)
+                            {
+                                if (noRetreatDone == false) 
+                                {
+                                    noRetreatInstance.Play();
+                                    noRetreatDone = true;
+                                }
+                                else if (noRetreatDone && noRetreatInstance.State == SoundState.Stopped)
+                                {
 
+                                }
+                            }
+                        }
+
+
+                        
                     }
 
                 }
@@ -292,11 +389,17 @@ namespace Monogame_Summative_Assignment_1_5
                     {
                         _spriteBatch.Draw(tailsTexture, tailsRect, Color.White);
                     }
+                }
 
-                    if (eggmanTurned == false)
-                    {
-                        
-                    }
+
+
+                if (eggmanTurned == false)
+                {
+                    _spriteBatch.Draw(eggmanTexture, eggmanRect, Color.White);
+                }
+                else if (eggmanTurned == true)
+                {
+                    _spriteBatch.Draw(eggmanTexture, eggmanRect, null, Color.White, 0f, new Vector2(0,0), SpriteEffects.FlipHorizontally, 0f);
                 }
             }
 

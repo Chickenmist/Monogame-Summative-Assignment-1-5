@@ -31,6 +31,18 @@
 /processorParam:TextureFormat=Color
 /build:eggmanSprite.png
 
+#begin eggMobileTexture.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:eggMobileTexture.png
+
 #begin greenHillZoneBackground.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -49,6 +61,12 @@
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:instructionText.spritefont
+
+#begin NoRetreatEggman.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:NoRetreatEggman.mp3
 
 #begin sonicAnimationTitle.png
 /importer:TextureImporter
@@ -85,6 +103,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:sonicFootTapTwo.png
+
+#begin SonicIsThatYou.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:SonicIsThatYou.mp3
 
 #begin sonicRunningSprite.png
 /importer:TextureImporter
@@ -133,6 +157,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:tailsSprite.png
+
+#begin ThisIsItEggman.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:ThisIsItEggman.mp3
 
 #begin titleText.spritefont
 /importer:FontDescriptionImporter
