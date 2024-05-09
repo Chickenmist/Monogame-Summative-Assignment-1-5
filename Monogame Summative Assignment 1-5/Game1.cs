@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -35,6 +36,8 @@ namespace Monogame_Summative_Assignment_1_5
         bool tailsIsFlying; //Indicates if Tails is flying
 
         bool eggmanInMobile; //Indicates if Eggman is in the Eggmobile
+
+        bool eggmanBobing; //Indicates if Eggman is at the height where he starts bobing
 
         bool eggmanFlyingAway; //Indicates if Eggman is running away
 
@@ -78,6 +81,7 @@ namespace Monogame_Summative_Assignment_1_5
 
         Texture2D eggmobileTexture; //Image size is 80x81
         Rectangle eggmobileRect;
+        Vector2 eggmobileSpeed;
         //
 
         //Fonts
@@ -97,6 +101,13 @@ namespace Monogame_Summative_Assignment_1_5
 
         SoundEffect noRetreat;
         SoundEffectInstance noRetreatInstance; //Eggman says no retreat line
+        //
+
+        //Songs
+        Song titleSong;
+        Song runSong;
+        Song eggmanSong;
+        Song winSong;
         //
 
         public Game1()
@@ -124,6 +135,8 @@ namespace Monogame_Summative_Assignment_1_5
 
             tailsFlyingSpeed = new Vector2(0, 3);
 
+            eggmobileSpeed = new Vector2(0, -5);
+
             sonicRunning = false;
 
             sonicStopped = false;
@@ -147,7 +160,9 @@ namespace Monogame_Summative_Assignment_1_5
             timesSonicsCrossed = 0;
 
             screen = Screen.Title;
-
+            
+            eggmobileRect = new Rectangle(720, 354, 100, 101);
+            
             base.Initialize();
 
             sonicRect = new Rectangle(320, 445 - sonicTexture.Height, sonicTexture.Width, sonicTexture.Height);
@@ -157,7 +172,7 @@ namespace Monogame_Summative_Assignment_1_5
             tailsFlyingRect = new Rectangle(320 - tailsFlyingTexture.Width, 0 - (tailsFlyingTexture.Height * 2), tailsFlyingTexture.Width, tailsFlyingTexture.Height);
             
             eggmanRect = new Rectangle(720, 455 - eggmanTexture.Height, eggmanTexture.Width, eggmanTexture.Height);
-            eggmobileRect = new Rectangle(720, 455 - eggmobileTexture.Height, eggmobileTexture.Width, eggmobileTexture.Height);
+            
         }
 
         protected override void LoadContent()
@@ -237,7 +252,7 @@ namespace Monogame_Summative_Assignment_1_5
                     seconds = 0;
                 }
 
-                if (sonicRunning == true)
+                if (sonicRunning)
                 {
                     sonicRunningRect.X += (int)sonicRunningSpeed.X;
 
@@ -266,9 +281,9 @@ namespace Monogame_Summative_Assignment_1_5
                         sonicStopped = true;
                     }
                 }
-                else if (sonicStopped ==  true)
+                else if (sonicStopped)
                 {
-                    if (tailsIsFlying == true)
+                    if (tailsIsFlying)
                     {
                         tailsFlyingRect.Y += (int)tailsFlyingSpeed.Y;
                         
@@ -293,7 +308,7 @@ namespace Monogame_Summative_Assignment_1_5
                             eggmanTurned = true;
                         }
                     }
-                    else if (eggmanTurned == true)
+                    else if (eggmanTurned)
                     {
                         if (sonicIsThatYouDone == false)
                         {
@@ -316,16 +331,58 @@ namespace Monogame_Summative_Assignment_1_5
                                 }
                                 else if (noRetreatDone && noRetreatInstance.State == SoundState.Stopped)
                                 {
-
+                                    eggmanInMobile = true;
+                                    
+                                    seconds = 0;
+                                    
+                                    eggmanTurned = false;
                                 }
                             }
                         }
 
+                        if (eggmanInMobile)
+                        {
+                            eggmobileRect.Offset(eggmobileSpeed);
+                            
+                            if (eggmobileRect.Top <= 80)
+                            {
+                                if (eggmanFlyingAway == false)
+                                {
+                                    eggmobileSpeed = new Vector2(0, 1);
+                                }
+                                else
+                                {
+                                    eggmobileSpeed = new Vector2(5, 1);
+                                }
 
-                        
+                                eggmanBobing = true;
+                            }
+                            else if (eggmanBobing && eggmobileRect.Bottom >= 200) 
+                            {
+                                eggmobileSpeed.Y *= -1;
+                            }
+
+                            if (eggmanBobing)
+                            {
+                                seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                                if (seconds >= 4)
+                                {
+                                    eggmanFlyingAway = true;
+                                }
+                            }
+                        }
                     }
-
                 }
+
+                if (eggmobileRect.X >= _graphics.PreferredBackBufferWidth + (eggmobileRect.Width * 2))
+                {
+                    screen = Screen.EndScreen;
+                }
+            }
+            
+            if (screen == Screen.EndScreen)
+            {
+                
             }
 
 
@@ -377,7 +434,7 @@ namespace Monogame_Summative_Assignment_1_5
                 {
                     _spriteBatch.Draw(sonicRunningTexture, sonicRunningRect, Color.White);
                 }
-                else if (sonicStopped == true)
+                else if (sonicStopped)
                 {
                     _spriteBatch.Draw(sonicTexture, sonicRect, Color.White);
 
@@ -391,16 +448,29 @@ namespace Monogame_Summative_Assignment_1_5
                     }
                 }
 
-
-
-                if (eggmanTurned == false)
+                if (eggmanInMobile == false)
                 {
-                    _spriteBatch.Draw(eggmanTexture, eggmanRect, Color.White);
+                    if (eggmanTurned == false)
+                    {
+                        _spriteBatch.Draw(eggmanTexture, eggmanRect, Color.White);
+                    }
+                    else if (eggmanTurned)
+                    {
+                        _spriteBatch.Draw(eggmanTexture, eggmanRect, null, Color.White, 0f, new Vector2(0, 0), SpriteEffects.FlipHorizontally, 0f);
+                    }
                 }
-                else if (eggmanTurned == true)
+                else if (eggmanInMobile)
                 {
-                    _spriteBatch.Draw(eggmanTexture, eggmanRect, null, Color.White, 0f, new Vector2(0,0), SpriteEffects.FlipHorizontally, 0f);
+                    if (eggmanFlyingAway == false)
+                    {
+                        _spriteBatch.Draw(eggmobileTexture, eggmobileRect, Color.White);
+                    }
+                    else
+                    {
+                        _spriteBatch.Draw(eggmobileTexture, eggmobileRect, null, Color.White, 0f, new Vector2(0, 0), SpriteEffects.FlipHorizontally, 0f);
+                    }
                 }
+
             }
 
             _spriteBatch.End();

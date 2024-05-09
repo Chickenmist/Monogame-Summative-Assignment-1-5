@@ -13,6 +13,12 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin ActClear.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:ActClear.mp3
+
 #begin BigTimeSonic.mp3
 /importer:Mp3Importer
 /processor:SoundEffectProcessor
@@ -42,6 +48,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:eggMobileTexture.png
+
+#begin GreenHillZone.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:GreenHillZone.mp3
 
 #begin greenHillZoneBackground.png
 /importer:TextureImporter
@@ -157,6 +169,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:tailsSprite.png
+
+#begin thatWasCool.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:thatWasCool.mp3
 
 #begin ThisIsItEggman.mp3
 /importer:Mp3Importer
