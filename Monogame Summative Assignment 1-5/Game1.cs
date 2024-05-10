@@ -8,6 +8,9 @@ using System.Runtime.CompilerServices;
 
 namespace Monogame_Summative_Assignment_1_5
 { 
+
+    //Wilson
+
     enum Screen
     {
         Title,
@@ -25,6 +28,9 @@ namespace Monogame_Summative_Assignment_1_5
 
         //Floats, ints, and bools
         float seconds;
+
+        float songDuration; //these are to keep track if the title song has ended
+        float songTime;
 
         bool sonicRunning;
         int timesSonicsCrossed; //Keeps track of how many times sonic has crossed the screen during the running animation
@@ -48,6 +54,8 @@ namespace Monogame_Summative_Assignment_1_5
         bool thisIsItEggmanDone; //Indicates if the this is it Eggman voice line has been played
 
         bool noRetreatDone; //Indicates if the no retreat line has been played
+
+        bool thatWasCoolDone; //Indicates if that was cool line has been played
         //
 
         MouseState mouseState;
@@ -82,6 +90,9 @@ namespace Monogame_Summative_Assignment_1_5
         Texture2D eggmobileTexture; //Image size is 80x81
         Rectangle eggmobileRect;
         Vector2 eggmobileSpeed;
+
+        Texture2D capsuleTexture; //Image size is 100x125
+        Rectangle capsuleRect;
         //
 
         //Fonts
@@ -101,6 +112,9 @@ namespace Monogame_Summative_Assignment_1_5
 
         SoundEffect noRetreat;
         SoundEffectInstance noRetreatInstance; //Eggman says no retreat line
+
+        SoundEffect thatWasCool;
+        SoundEffectInstance thatWasCoolInstance; //Sonic says that was cool
         //
 
         //Songs
@@ -157,13 +171,19 @@ namespace Monogame_Summative_Assignment_1_5
 
             noRetreatDone = false;
 
+            thatWasCoolDone = false;
+
             timesSonicsCrossed = 0;
+
+            songTime = 0;
 
             screen = Screen.Title;
             
             eggmobileRect = new Rectangle(720, 354, 100, 101);
             
             base.Initialize();
+
+            songDuration = titleSong.Duration.Milliseconds;
 
             sonicRect = new Rectangle(320, 445 - sonicTexture.Height, sonicTexture.Width, sonicTexture.Height);
             sonicRunningRect = new Rectangle(0, 445 - sonicRunningTexture.Height, sonicRunningTexture.Width, sonicRunningTexture.Height);
@@ -172,7 +192,8 @@ namespace Monogame_Summative_Assignment_1_5
             tailsFlyingRect = new Rectangle(320 - tailsFlyingTexture.Width, 0 - (tailsFlyingTexture.Height * 2), tailsFlyingTexture.Width, tailsFlyingTexture.Height);
             
             eggmanRect = new Rectangle(720, 455 - eggmanTexture.Height, eggmanTexture.Width, eggmanTexture.Height);
-            
+
+            capsuleRect = new Rectangle(890, 455 - capsuleTexture.Height, capsuleTexture.Width, capsuleTexture.Height);
         }
 
         protected override void LoadContent()
@@ -190,9 +211,10 @@ namespace Monogame_Summative_Assignment_1_5
             mainBackground = Content.Load<Texture2D>("greenHillZoneBackground");
             eggmanTexture = Content.Load<Texture2D>("eggmanSprite");
             eggmobileTexture = Content.Load<Texture2D>("eggMobileTexture");
+            capsuleTexture = Content.Load<Texture2D>("capsuleSprite");
             //
 
-            //Sound Effects
+            //Sound Effects and Songs
             bigTime = Content.Load<SoundEffect>("BigTimeSonic");
             bigTimeInstance = bigTime.CreateInstance();
 
@@ -204,6 +226,15 @@ namespace Monogame_Summative_Assignment_1_5
 
             noRetreat = Content.Load<SoundEffect>("NoRetreatEggman");
             noRetreatInstance = noRetreat.CreateInstance();
+
+            thatWasCool = Content.Load<SoundEffect>("thatWasCool");
+            thatWasCoolInstance = thatWasCool.CreateInstance();
+
+            titleSong = Content.Load<Song>("TitleScreenMusic");
+            runSong = Content.Load<Song>("GreenHillZone");
+            eggmanSong = Content.Load<Song>("DangerontheDanceFloor");
+            winSong = Content.Load<Song>("ActClear");
+            MediaPlayer.Play(titleSong);
             //
 
             //Fonts
@@ -227,13 +258,18 @@ namespace Monogame_Summative_Assignment_1_5
 
             // TODO: Add your update logic here
 
-            Window.Title = $"{mouseState.X}, {mouseState.Y}";
+            //Window.Title = $"{mouseState.X}, {mouseState.Y}";
            
             if (screen == Screen.Title)
             {
-                if (keyboardState.IsKeyDown(Keys.Enter))
+                songTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (keyboardState.IsKeyDown(Keys.Enter) || songTime >= songDuration)
                 {
                     screen = Screen.RunningScreen;
+
+                    MediaPlayer.Stop();
+
+                    MediaPlayer.Play(runSong);
                 }
             }
 
@@ -266,13 +302,19 @@ namespace Monogame_Summative_Assignment_1_5
                     {
                         sonicRunningRect.X = 0 - sonicRunningRect.Width;
                         screen = Screen.MainAnimation;
+
+                        MediaPlayer.Stop();
+
+                        MediaPlayer.Play(eggmanSong);
                     }
                 }
             }
 
             if (screen == Screen.MainAnimation)
             {
-                if (sonicStopped == false)
+                seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (!sonicStopped)
                 {
                     sonicRunningRect.X += (int)sonicRunningSpeed.X;
 
@@ -293,82 +335,81 @@ namespace Monogame_Summative_Assignment_1_5
                         }
                     }
 
-                    if (eggmanTurned == false)
+                    if (eggmanTurned == false && noRetreatDone == false)
                     {
-                        seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
-
                         if (seconds >= 1 && bigTimeDone == false)
                         {
                             bigTimeInstance.Play();
+                            
                             bigTimeDone = true;
                         }
 
                         if (bigTimeInstance.State == SoundState.Stopped && bigTimeDone)
                         {
                             eggmanTurned = true;
+
+                            seconds = 0;
                         }
                     }
                     else if (eggmanTurned)
                     {
-                        if (sonicIsThatYouDone == false)
+                        if (!eggmanInMobile)
                         {
-                            sonicIsThatYouInstance.Play();
-                            sonicIsThatYouDone = true;
-                        }
-                        else if (sonicIsThatYouDone && sonicIsThatYouInstance.State == SoundState.Stopped)
-                        {
-                            if (thisIsItEggmanDone == false)
+                            if (!sonicIsThatYouDone)
                             {
-                                thisIsItEggmanInstance.Play();
-                                thisIsItEggmanDone = true;
+                                sonicIsThatYouInstance.Play();
+                                sonicIsThatYouDone = true;
                             }
-                            else if (thisIsItEggmanDone && thisIsItEggmanInstance.State == SoundState.Stopped)
+                            else if (sonicIsThatYouDone && sonicIsThatYouInstance.State == SoundState.Stopped)
                             {
-                                if (noRetreatDone == false) 
+                                if (!thisIsItEggmanDone)
                                 {
-                                    noRetreatInstance.Play();
-                                    noRetreatDone = true;
+                                    thisIsItEggmanInstance.Play();
+                                    thisIsItEggmanDone = true;
                                 }
-                                else if (noRetreatDone && noRetreatInstance.State == SoundState.Stopped)
+                                else if (thisIsItEggmanDone && thisIsItEggmanInstance.State == SoundState.Stopped)
                                 {
-                                    eggmanInMobile = true;
-                                    
-                                    seconds = 0;
-                                    
-                                    eggmanTurned = false;
+                                    if (!noRetreatDone)
+                                    {
+                                        noRetreatInstance.Play();
+                                        noRetreatDone = true;
+                                    }
+                                    else if (noRetreatDone && noRetreatInstance.State == SoundState.Stopped)
+                                    {
+                                        eggmanInMobile = true;
+                                        seconds = 0;
+                                    }
                                 }
                             }
                         }
-
-                        if (eggmanInMobile)
+                        else if (eggmanInMobile)
                         {
+                            Window.Title = seconds.ToString();
                             eggmobileRect.Offset(eggmobileSpeed);
-                            
                             if (eggmobileRect.Top <= 80)
                             {
-                                if (eggmanFlyingAway == false)
-                                {
-                                    eggmobileSpeed = new Vector2(0, 1);
-                                }
-                                else
-                                {
-                                    eggmobileSpeed = new Vector2(5, 1);
-                                }
-
                                 eggmanBobing = true;
+
+                                if (eggmanBobing)
+                                {
+                                    if (seconds >= 3)
+                                    {
+                                        eggmanFlyingAway = true;
+                                    }
+
+                                    if (!eggmanFlyingAway)
+                                    {
+                                        eggmobileSpeed = new Vector2(0, 1);
+                                    }
+                                    else if (eggmanFlyingAway)
+                                    {
+                                        eggmobileSpeed = new Vector2(2, 1);
+                                    }
+                                }
                             }
-                            else if (eggmanBobing && eggmobileRect.Bottom >= 200) 
+                            else if (eggmanBobing && eggmobileRect.Bottom >= 200)
                             {
                                 eggmobileSpeed.Y *= -1;
-                            }
-
-                            if (eggmanBobing)
-                            {
-                                seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                                if (seconds >= 4)
-                                {
-                                    eggmanFlyingAway = true;
-                                }
                             }
                         }
                     }
@@ -377,14 +418,18 @@ namespace Monogame_Summative_Assignment_1_5
                 if (eggmobileRect.X >= _graphics.PreferredBackBufferWidth + (eggmobileRect.Width * 2))
                 {
                     screen = Screen.EndScreen;
+
+                    MediaPlayer.Play(winSong);
                 }
             }
             
             if (screen == Screen.EndScreen)
             {
-                
+                if (!thatWasCoolDone)
+                {
+                    thatWasCoolInstance.Play();
+                }
             }
-
 
             base.Update(gameTime);
         }
@@ -415,7 +460,7 @@ namespace Monogame_Summative_Assignment_1_5
                     _spriteBatch.Draw(mainBackground, backgroundRect, Color.White);
                 }
 
-                if (sonicRunning == false)
+                if (!sonicRunning)
                 {
                     _spriteBatch.Draw(sonicFootTaps[tappingFrame], new Vector2(0, 445 - sonicRunningTexture.Height), Color.White);
 
@@ -430,7 +475,7 @@ namespace Monogame_Summative_Assignment_1_5
             {
                 _spriteBatch.Draw(mainBackground, backgroundRect, Color.White);
 
-                if (sonicStopped == false)
+                if (!sonicStopped)
                 {
                     _spriteBatch.Draw(sonicRunningTexture, sonicRunningRect, Color.White);
                 }
@@ -448,20 +493,20 @@ namespace Monogame_Summative_Assignment_1_5
                     }
                 }
 
-                if (eggmanInMobile == false)
+                if (!eggmanInMobile)
                 {
-                    if (eggmanTurned == false)
+                    if (!eggmanTurned)
                     {
                         _spriteBatch.Draw(eggmanTexture, eggmanRect, Color.White);
                     }
-                    else if (eggmanTurned)
+                    else if (eggmanTurned && eggmanInMobile == false)
                     {
                         _spriteBatch.Draw(eggmanTexture, eggmanRect, null, Color.White, 0f, new Vector2(0, 0), SpriteEffects.FlipHorizontally, 0f);
                     }
                 }
                 else if (eggmanInMobile)
                 {
-                    if (eggmanFlyingAway == false)
+                    if (!eggmanFlyingAway)
                     {
                         _spriteBatch.Draw(eggmobileTexture, eggmobileRect, Color.White);
                     }
@@ -471,6 +516,12 @@ namespace Monogame_Summative_Assignment_1_5
                     }
                 }
 
+            }
+            else if (screen == Screen.EndScreen)
+            {
+                _spriteBatch.Draw(titleScreenBackground, backgroundRect, Color.White);
+                _spriteBatch.DrawString(title, "The End!", new Vector2(240, 359), Color.Black);
+                _spriteBatch.DrawString(instructions, "Press enter to close", new Vector2(5, 560), Color.Yellow);
             }
 
             _spriteBatch.End();
