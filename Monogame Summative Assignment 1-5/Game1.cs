@@ -31,6 +31,8 @@ namespace Monogame_Summative_Assignment_1_5
 
         float songDuration; //these are to keep track if the title song has ended
         float songTime;
+        
+        bool runningSongStarted;
 
         bool sonicRunning;
         int timesSonicsCrossed; //Keeps track of how many times sonic has crossed the screen during the running animation
@@ -58,7 +60,6 @@ namespace Monogame_Summative_Assignment_1_5
         bool thatWasCoolDone; //Indicates if that was cool line has been played
         //
 
-        MouseState mouseState;
         KeyboardState keyboardState;
 
         //Textures, Rectangles and Vectors
@@ -139,6 +140,8 @@ namespace Monogame_Summative_Assignment_1_5
             _graphics.PreferredBackBufferHeight = 600;
             _graphics.ApplyChanges();
 
+            Window.Title = "A Really Bad Sonic Animation";
+
             backgroundRect = new Rectangle(0, 0, 1000, 600);
 
             seconds = 0;
@@ -177,13 +180,15 @@ namespace Monogame_Summative_Assignment_1_5
 
             songTime = 0;
 
+            runningSongStarted = false;
+
             screen = Screen.Title;
             
             eggmobileRect = new Rectangle(720, 354, 100, 101);
             
             base.Initialize();
 
-            songDuration = titleSong.Duration.Milliseconds;
+            songDuration = titleSong.Duration.Seconds;
 
             sonicRect = new Rectangle(320, 445 - sonicTexture.Height, sonicTexture.Width, sonicTexture.Height);
             sonicRunningRect = new Rectangle(0, 445 - sonicRunningTexture.Height, sonicRunningTexture.Width, sonicRunningTexture.Height);
@@ -257,24 +262,26 @@ namespace Monogame_Summative_Assignment_1_5
                 Exit();
 
             // TODO: Add your update logic here
-
-            //Window.Title = $"{mouseState.X}, {mouseState.Y}";
-           
+ 
             if (screen == Screen.Title)
             {
                 songTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                if (keyboardState.IsKeyDown(Keys.Enter) || songTime >= songDuration)
+                if (keyboardState.IsKeyDown(Keys.Enter) || songTime >= songDuration - 1)
                 {
                     screen = Screen.RunningScreen;
 
                     MediaPlayer.Stop();
-
-                    MediaPlayer.Play(runSong);
                 }
             }
 
             if (screen == Screen.RunningScreen)
             {
+                if (!runningSongStarted)
+                {
+                    MediaPlayer.Play(runSong);
+                    runningSongStarted = true;
+                }
+
                 seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (seconds >= 0.4)
                 {
@@ -384,7 +391,6 @@ namespace Monogame_Summative_Assignment_1_5
                         }
                         else if (eggmanInMobile)
                         {
-                            Window.Title = seconds.ToString();
                             eggmobileRect.Offset(eggmobileSpeed);
                             if (eggmobileRect.Top <= 80)
                             {
@@ -392,7 +398,7 @@ namespace Monogame_Summative_Assignment_1_5
 
                                 if (eggmanBobing)
                                 {
-                                    if (seconds >= 3)
+                                    if (seconds >= 3.5)
                                     {
                                         eggmanFlyingAway = true;
                                     }
@@ -428,6 +434,13 @@ namespace Monogame_Summative_Assignment_1_5
                 if (!thatWasCoolDone)
                 {
                     thatWasCoolInstance.Play();
+
+                    thatWasCoolDone = true;
+                }
+
+                if (keyboardState.IsKeyDown(Keys.Enter))
+                {
+                    this.Exit();
                 }
             }
 
@@ -444,7 +457,7 @@ namespace Monogame_Summative_Assignment_1_5
 
             if (screen == Screen.Title)
             {
-                _spriteBatch.Draw(titleScreenBackground, backgroundRect, null, Color.White);
+                _spriteBatch.Draw(titleScreenBackground, backgroundRect, Color.White);
                 _spriteBatch.DrawString(title, "A REALLY BAD SONIC ANIMATION", new Vector2(240, 359), Color.Black);
                 _spriteBatch.DrawString(instructions, "Press enter to proceed or wait for music to end", new Vector2(5, 560), Color.Yellow);
 
@@ -474,6 +487,8 @@ namespace Monogame_Summative_Assignment_1_5
             else if (screen == Screen.MainAnimation)
             {
                 _spriteBatch.Draw(mainBackground, backgroundRect, Color.White);
+
+                _spriteBatch.Draw(capsuleTexture, capsuleRect, Color.White);
 
                 if (!sonicStopped)
                 {
@@ -515,13 +530,12 @@ namespace Monogame_Summative_Assignment_1_5
                         _spriteBatch.Draw(eggmobileTexture, eggmobileRect, null, Color.White, 0f, new Vector2(0, 0), SpriteEffects.FlipHorizontally, 0f);
                     }
                 }
-
             }
             else if (screen == Screen.EndScreen)
             {
                 _spriteBatch.Draw(titleScreenBackground, backgroundRect, Color.White);
-                _spriteBatch.DrawString(title, "The End!", new Vector2(240, 359), Color.Black);
-                _spriteBatch.DrawString(instructions, "Press enter to close", new Vector2(5, 560), Color.Yellow);
+                _spriteBatch.DrawString(title, "The End!", new Vector2(435, 359), Color.Black);
+                _spriteBatch.DrawString(instructions, "Press enter or escape to close", new Vector2(5, 560), Color.Yellow);
             }
 
             _spriteBatch.End();
