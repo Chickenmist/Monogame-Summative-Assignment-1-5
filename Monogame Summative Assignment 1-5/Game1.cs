@@ -266,7 +266,7 @@ namespace Monogame_Summative_Assignment_1_5
             if (screen == Screen.Title)
             {
                 songTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                if (keyboardState.IsKeyDown(Keys.Enter) || songTime >= songDuration - 1)
+                if (keyboardState.IsKeyDown(Keys.Enter) || songTime > songDuration - 2)
                 {
                     screen = Screen.RunningScreen;
 
